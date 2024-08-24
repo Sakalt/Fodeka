@@ -5,7 +5,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    startButton.addEventListener('click', () => {
+    startButton.addEventListener('click', async () => {
+        // ボタンを無効化し、色を変更する
+        startButton.disabled = true;
+        startButton.classList.add('started');
+
         const apiKey1 = 'd6089a37-308f-4e0a-a136-856565ddef06191820644ff3a7';
         const agentId1 = '531604ce-edc4-43d3-9fbe-b6f3516810171917f2dae9b212';
         const apiKey2 = 'e2f526dc-4da0-471b-b222-c3ec7466530b191823f3bd424d';
@@ -17,8 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        let currentUtterance = 'Hello from Agent 1'; // Initial utterance
-        let isAgent1Turn = true; // Start with Agent 1
+        let currentUtterance = 'Hello from イッチ'; // 初期発話
+        let isAgent1Turn = true; // イッチ から開始
 
         async function sendMessage(apiKey, agentId, utterance, uid) {
             try {
@@ -34,7 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         uid: uid
                     })
                 });
-                return await response.json();
+                const text = await response.text(); // JSON 文字列をテキストとして取得
+                console.log('Response:', text); // レスポンスをコンソールに表示
+                return JSON.parse(text); // JSON に変換
             } catch (error) {
                 console.error('Error:', error);
                 conversationDiv.innerHTML += '<p class="error">Error occurred. Check console for details.</p>';
@@ -46,6 +52,26 @@ document.addEventListener('DOMContentLoaded', () => {
             let uid1 = 'unique_user_id_1';
             let uid2 = 'unique_user_id_2';
 
+            // 初回はイッチから始める
+            let data = await sendMessage(apiKey1, agentId1, currentUtterance, uid1);
+            if (data) {
+                const responseFromAgent1 = data.bestResponse.utterance;
+                conversationDiv.innerHTML += `
+                    <div class="message itch">
+                        <p><strong>イッチ:</strong> ${currentUtterance}</p>
+                    </div>
+                    <div class="message neeta">
+                        <p><strong>ニータ:</strong> ${responseFromAgent1}</p>
+                    </div>
+                `;
+                currentUtterance = responseFromAgent1;
+                conversationDiv.scrollTop = conversationDiv.scrollHeight;
+            } else {
+                return;
+            }
+
+            isAgent1Turn = false;
+
             while (true) {
                 let data;
                 if (isAgent1Turn) {
@@ -53,11 +79,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (!data) break;
                     const responseFromAgent1 = data.bestResponse.utterance;
                     conversationDiv.innerHTML += `
-                        <div class="message agent1">
-                            <p><strong>Agent 1:</strong> ${currentUtterance}</p>
+                        <div class="message itch">
+                            <p><strong>イッチ:</strong> ${currentUtterance}</p>
                         </div>
-                        <div class="message agent2">
-                            <p><strong>Agent 2:</strong> ${responseFromAgent1}</p>
+                        <div class="message neeta">
+                            <p><strong>ニータ:</strong> ${responseFromAgent1}</p>
                         </div>
                     `;
                     currentUtterance = responseFromAgent1;
@@ -66,11 +92,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (!data) break;
                     const responseFromAgent2 = data.bestResponse.utterance;
                     conversationDiv.innerHTML += `
-                        <div class="message agent2">
-                            <p><strong>Agent 2:</strong> ${currentUtterance}</p>
+                        <div class="message neeta">
+                            <p><strong>ニータ:</strong> ${currentUtterance}</p>
                         </div>
-                        <div class="message agent1">
-                            <p><strong>Agent 1:</strong> ${responseFromAgent2}</p>
+                        <div class="message itch">
+                            <p><strong>イッチ:</strong> ${responseFromAgent2}</p>
                         </div>
                     `;
                     currentUtterance = responseFromAgent2;
