@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Conversation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>AI Conversation</h1>
+        <button id="startConversation">Start Conversation</button>
+        <div id="conversation" class="conversation">
+            <!-- 会話の内容がここに追加されます -->
+        </div>
+    </div>
+    <script>
+        document.getElementById('startConversation').addEventListener('click', async () => {
+            const apiKey1 = 'd6089a37-308f-4e0a-a136-856565ddef06191820644ff3a7';
+            const agentId1 = '531604ce-edc4-43d3-9fbe-b6f3516810171917f2dae9b212';
+            const apiKey2 = 'e2f526dc-4da0-471b-b222-c3ec7466530b191823f3bd424d';
+            const agentId2 = '6844ece1-a5c2-4163-8a58-105f4fb9ec091917f2904307e';
+
+            try {
+                // エージェント1にリクエストを送信
+                let response = await fetch('https://api-mebo.dev/api', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        api_key: apiKey1,
+                        agent_id: agentId1,
+                        utterance: 'Hello from Agent 1',
+                        uid: 'unique_user_id_1'
+                    })
+                });
+                let data = await response.json();
+                const agent1ToAgent2 = data.bestResponse.utterance;
+                
+                // 会話の内容を更新
+                document.getElementById('conversation').innerHTML += `
+                    <div class="message agent1">
+                        <p><strong>Agent 1:</strong> ${'Hello from Agent 1'}</p>
+                    </div>
+                    <div class="message agent2">
+                        <p><strong>Agent 2:</strong> ${agent1ToAgent2}</p>
+                    </div>
+                `;
+                
+                // エージェント2にリクエストを送信
+                response = await fetch('https://api-mebo.dev/api', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        api_key: apiKey2,
+                        agent_id: agentId2,
+                        utterance: agent1ToAgent2,
+                        uid: 'unique_user_id_2'
+                    })
+                });
+                data = await response.json();
+                const agent2ToAgent1 = data.bestResponse.utterance;
+                
+                // 会話の内容を更新
+                document.getElementById('conversation').innerHTML += `
+                    <div class="message agent1">
+                        <p><strong>Agent 1:</strong> ${agent2ToAgent1}</p>
+                    </div>
+                    <div class="message agent2">
+                        <p><strong>Agent 2:</strong> ${agent2ToAgent1}</p>
+                    </div>
+                `;
+                
+                // エージェント1にリクエストを送信して会話を完結
+                response = await fetch('https://api-mebo.dev/api', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        api_key: apiKey1,
+                        agent_id: agentId1,
+                        utterance: agent2ToAgent1,
+                        uid: 'unique_user_id_1'
+                    })
+                });
+                data = await response.json();
+                const finalResponseFromAgent1 = data.bestResponse.utterance;
+
+                // 会話の内容を更新
+                document.getElementById('conversation').innerHTML += `
+                    <div class="message agent1">
+                        <p><strong>Agent 1:</strong> ${finalResponseFromAgent1}</p>
+                    </div>
+                `;
+                
+                // スクロールを最新のメッセージまで移動
+                document.getElementById('conversation').scrollTop = document.getElementById('conversation').scrollHeight;
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('conversation').innerHTML += '<p class="error">Error occurred. Check console for details.</p>';
+            }
+        });
+    </script>
+</body>
+</html>
