@@ -1,5 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
     const startButton = document.getElementById('startConversation');
+    if (!startButton) {
+        console.error('要素が見つかりません: startConversation');
+        return;
+    }
+    
     const conversationDiv = document.getElementById('conversation');
     let conversationStarted = false;
     let currentAgent = 'itch';
