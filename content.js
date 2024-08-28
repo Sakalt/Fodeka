@@ -1,13 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const startButton = document.getElementById('startConversation');
-    if (!startButton) {
-        console.error('要素が見つかりません: startConversation');
-        return;
-    }
-    
     const conversationDiv = document.getElementById('conversation');
     let conversationStarted = false;
-    let currentAgent = 'itch';
 
     const initialMessages = {
         itch: 'こんにちは、イッチです!',
@@ -30,25 +24,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 会話をループで続ける
         while (true) {
-            // 最後のメッセージを取得
             const lastMessage = conversation[conversation.length - 1];
             
-            // メッセージを送信し、レスポンスを取得
             let response = await sendMessage(lastMessage.text, lastMessage.agent);
             if (!response) {
                 displayError('申し訳ありませんが、何か問題が発生しました。後で再試行してください。');
                 break;
             }
 
-            // 次のエージェントとメッセージを決定
             const nextAgent = lastMessage.agent === 'itch' ? 'neeta' : 'itch';
             const nextText = response.bestResponse?.utterance || '応答がありません';
 
-            // 次のメッセージを会話に追加
             conversation.push({ agent: nextAgent, text: nextText });
             displayConversation(conversation);
 
-            // ストップ条件を確認 (例: メッセージに "end" が含まれているか)
             if (nextText.includes('end')) {
                 displayEndMessage();
                 break;
@@ -64,15 +53,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    api_key: agent === 'itch' ? '<API_KEY_ITCH>' : '<API_KEY_NEETA>',
-                    agent_id: agent === 'itch' ? '<AGENT_ID_ITCH>' : '<AGENT_ID_NEETA>',
+                    api_key: agent === 'itch' ? 'YOUR_API_KEY_ITCH' : 'YOUR_API_KEY_NEETA',
+                    agent_id: agent === 'itch' ? 'YOUR_AGENT_ID_ITCH' : 'YOUR_AGENT_ID_NEETA',
                     utterance: utterance,
                     uid: 'unique_user_id'
                 })
             });
 
             if (!response.ok) {
-                console.error('ネットワーク応答が正常ではありません:', response.statusText);
+                const errorText = await response.text(); // エラーレスポンスを取得
+                console.error('ネットワーク応答が正常ではありません:', response.status, errorText);
                 return null;
             }
 
