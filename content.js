@@ -8,13 +8,22 @@ document.addEventListener('DOMContentLoaded', () => {
         neeta: 'こんにちは、イッチ! 今日はどうですか？'
     };
 
+    const apiKeys = {
+        itch: 'd6089a37-308f-4e0a-a136-856565ddef06191820644ff3a7',
+        neeta: 'e2f526dc-4da0-471b-b222-c3ec7466530b191823f3bd424d'
+    };
+
+    const agentIds = {
+        itch: '531604ce-edc4-43d3-9fbe-b6f3516810171917f2dae9b212',
+        neeta: '6844ece1-a5c2-4163-8a58-105f4fb9ec091917f2904307e'
+    };
+
     startButton.addEventListener('click', async function(event) {
         if (conversationStarted) return;
 
         conversationStarted = true;
         startButton.classList.add('started');
 
-        // 初期メッセージで会話を開始
         let conversation = [
             { agent: 'itch', text: initialMessages.itch },
             { agent: 'neeta', text: initialMessages.neeta }
@@ -22,7 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         displayConversation(conversation);
 
-        // 会話をループで続ける
         while (true) {
             const lastMessage = conversation[conversation.length - 1];
             
@@ -53,15 +61,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    api_key: agent === 'itch' ? 'YOUR_API_KEY_ITCH' : 'YOUR_API_KEY_NEETA',
-                    agent_id: agent === 'itch' ? 'YOUR_AGENT_ID_ITCH' : 'YOUR_AGENT_ID_NEETA',
+                    api_key: apiKeys[agent],
+                    agent_id: agentIds[agent],
                     utterance: utterance,
-                    uid: 'unique_user_id'
+                    uid: 'unique_user_id' // ユーザーごとに一意のIDを設定してください
                 })
             });
 
             if (!response.ok) {
-                const errorText = await response.text(); // エラーレスポンスを取得
+                const errorText = await response.text();
                 console.error('ネットワーク応答が正常ではありません:', response.status, errorText);
                 return null;
             }
@@ -82,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function displayConversation(conversation) {
-        conversationDiv.innerHTML = ''; // 前の会話をクリア
+        conversationDiv.innerHTML = '';
 
         conversation.forEach(msg => {
             const messageDiv = document.createElement('div');
@@ -91,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
             conversationDiv.appendChild(messageDiv);
         });
 
-        conversationDiv.scrollTop = conversationDiv.scrollHeight; // 下にスクロール
+        conversationDiv.scrollTop = conversationDiv.scrollHeight;
     }
 
     function displayError(message) {
@@ -99,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
         errorDiv.classList.add('error');
         errorDiv.textContent = message;
         conversationDiv.appendChild(errorDiv);
-        conversationDiv.scrollTop = conversationDiv.scrollHeight; // 下にスクロール
+        conversationDiv.scrollTop = conversationDiv.scrollHeight;
     }
 
     function displayEndMessage() {
@@ -107,6 +115,6 @@ document.addEventListener('DOMContentLoaded', () => {
         endDiv.classList.add('end-message');
         endDiv.textContent = '会話が終了しました。';
         conversationDiv.appendChild(endDiv);
-        conversationDiv.scrollTop = conversationDiv.scrollHeight; // 下にスクロール
+        conversationDiv.scrollTop = conversationDiv.scrollHeight;
     }
 });
