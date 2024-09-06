@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const conversationDiv = document.getElementById('conversation');
     const userMessageInput = document.getElementById('userMessage');
 
-    sendButton.addEventListener('click', async function() {
+    sendButton.addEventListener('click', async function () {
         const userMessage = userMessageInput.value.trim();
         if (!userMessage) return;
 
@@ -62,11 +62,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const messageDiv = document.createElement('div');
         messageDiv.classList.add('message', sender);
 
-        // メッセージ内の "あ" を太字に変換
-        let formattedMessage = message.replace(/あ/g, '<strong>あ</strong>');
-
-        // メッセージ内のURLをリンクに変換
-        formattedMessage = formattedMessage.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+        // Markdown形式をHTMLに変換
+        let formattedMessage = message
+            // 見出しをHTMLに変換
+            .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+            .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+            .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+            // ボールドテキストをHTMLに変換
+            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/__(.+?)__/g, '<strong>$1</strong>')
+            // イタリックテキストをHTMLに変換
+            .replace(/\*(.+?)\*/g, '<em>$1</em>')
+            .replace(/_(.+?)_/g, '<em>$1</em>')
+            // リンクをHTMLに変換
+            .replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+            // 生のURLをリンクに変換
+            .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
 
         messageDiv.innerHTML = formattedMessage;
         conversationDiv.appendChild(messageDiv);
