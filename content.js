@@ -30,8 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    api_key: 'd6089a37-308f-4e0a-a136-856565ddef06191820644ff3a7', // 適切なAPIキーに置き換えてください
-                    agent_id: '531604ce-edc4-43d3-9fbe-b6f3516810171917f2dae9b212', // 適切なエージェントIDに置き換えてください
+                    api_key: '228dc901-c7fa-4bfe-9996-68b521c75ffd191c6ddbbfcb1', // 適切なAPIキーに置き換えてください
+                    agent_id: 'c22cd462-77b8-47e1-9c5f-6f82b8da336a191c6dbb9ca3d1', // 適切なエージェントIDに置き換えてください
                     utterance: utterance,
                     uid: 'unique_user_id' // ユーザーごとに一意のIDを設定してください
                 })
