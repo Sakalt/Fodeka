@@ -64,6 +64,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Markdown形式をHTMLに変換
         let formattedMessage = message
+            // コードブロック (3つのバッククォート) を <pre><code> タグに変換
+            .replace(/```([^`]+)```/g, '<pre><code>$1</code></pre>')
+            // インラインコード (1つのバッククォート) を <code> タグに変換
+            .replace(/`([^`]+)`/g, '<code>$1</code>')
             // 見出しをHTMLに変換
             .replace(/^### (.+)$/gm, '<h3>$1</h3>')
             .replace(/^## (.+)$/gm, '<h2>$1</h2>')
