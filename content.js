@@ -61,7 +61,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function displayMessage(sender, message) {
         const messageDiv = document.createElement('div');
         messageDiv.classList.add('message', sender);
-        messageDiv.textContent = message;
+
+        // メッセージ内の "あ" を太字に変換
+        let formattedMessage = message.replace(/あ/g, '<strong>あ</strong>');
+
+        // メッセージ内のURLをリンクに変換
+        formattedMessage = formattedMessage.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+
+        messageDiv.innerHTML = formattedMessage;
         conversationDiv.appendChild(messageDiv);
         conversationDiv.scrollTop = conversationDiv.scrollHeight;
     }
