@@ -1,3 +1,4 @@
-AIチャットサイト
-AIの対話を見られるサイト
+AIチャット
+
 https://chatgpt.com
+https://sakalt.github.io/Fodeka/AI2.html
