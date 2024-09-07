@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>名前生成サイト</title>
+    <style>
+        /* CSSのスタイル */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 1000px;
+        }
+
+        .input-section, .result-section {
+            width: 50%;
+            padding: 10px;
+        }
+
+        h1 {
+            font-size: 20px;
+            text-align: center;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .input-group input,
+        .input-group select,
+        .input-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .result-item {
+            margin-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 入力セクション -->
+        <div class="input-section">
+            <h1>名前生成サイト</h1>
+            <div class="input-group">
+                <label for="genre">ジャンル:</label>
+                <select id="genre">
+                    <option value="">指定しない</option>
+                    <option value="中国風">中国風</option>
+                    <option value="ファンタジー風">ファンタジー風</option>
+                    <option value="日本風">日本風</option>
+                    <option value="ヨーロッパ風">ヨーロッパ風</option>
+                    <option value="アフリカ風">アフリカ風</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="length">長さ:</label>
+                <select id="length">
+                    <option value="">指定しない</option>
+                    <option value="短い">短い</option>
+                    <option value="中くらい">中くらい</option>
+                    <option value="長い">長い</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="startLetter">最初の文字:</label>
+                <input type="text" id="startLetter" placeholder="例: A">
+            </div>
+            <div class="input-group">
+                <label for="endLetter">最後の文字:</label>
+                <input type="text" id="endLetter" placeholder="例: Z">
+            </div>
+            <div class="input-group">
+                <label for="worldView">世界観:</label>
+                <input type="text" id="worldView" placeholder="例: ファンタジー、近未来">
+            </div>
+            <div class="input-group">
+                <label for="characterGender">キャラの性別:</label>
+                <input type="text" id="characterGender" placeholder="例: 男性、女性、その他">
+            </div>
+            <div class="input-group">
+                <label for="personality">個性:</label>
+                <input type="text" id="personality" placeholder="例: 勇敢、冷静">
+            </div>
+            <div class="input-group">
+                <label for="customOptions">カスタムオプション:</label>
+                <textarea id="customOptions" rows="3" placeholder="特定の要望や詳細を入力してください"></textarea>
+            </div>
+            <button id="generateButton">名前を生成</button>
+        </div>
+
+        <!-- 結果セクション -->
+        <div class="result-section">
+            <div id="result" class="result"></div>
+            <div class="input-group">
+                <label for="modificationRequest">修正依頼:</label>
+                <textarea id="modificationRequest" rows="3" placeholder="AIに依頼したい修正内容を入力してください"></textarea>
+            </div>
+            <button id="modifyButton">修正を依頼</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@xenova/transformers@latest"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const generateButton = document.getElementById('generateButton');
+            const modifyButton = document.getElementById('modifyButton');
+            const resultDiv = document.getElementById('result');
+
+            generateButton.addEventListener('click', async function () {
+                const genre = document.getElementById('genre').value;
+                const length = document.getElementById('length').value;
+                const startLetter = document.getElementById('startLetter').value.trim();
+                const endLetter = document.getElementById('endLetter').value.trim();
+                const worldView = document.getElementById('worldView').value.trim();
+                const characterGender = document.getElementById('characterGender').value.trim();
+                const personality = document.getElementById('personality').value.trim();
+                const customOptions = document.getElementById('customOptions').value.trim();
+
+                // AIへのプロンプト生成
+                let prompt = '';
+                if (genre) prompt += `${genre}風の`;
+                prompt += '名前を3つ作成してください。';
+                if (length) prompt += `長さは${length}で、`;
+                if (startLetter) prompt += `「${startLetter}」から始まり、`;
+                if (endLetter) prompt += `「${endLetter}」で終わります。`;
+                if (worldView) prompt += `世界観は「${worldView}」で、`;
+                if (characterGender) prompt += `キャラの性別は「${characterGender}」で、`;
+                if (personality) prompt += `個性は「${personality}」です。`;
+                if (customOptions) prompt += `${customOptions}。`;
+                prompt += '理由はそれぞれ20〜30文字におさめてください。';
+
+                // APIにリクエストを送信
+                const response = await sendRequest(prompt);
+                if (response) {
+                    displayResults(response);
+                } else {
+                    resultDiv.textContent = '申し訳ありませんが、何か問題が発生しました。後で再試行してください。';
+                }
+            });
+
+            modifyButton.addEventListener('click', async function () {
+                const modificationRequest = document.getElementById('modificationRequest').value.trim();
+                if (!modificationRequest) {
+                    alert('修正依頼内容を入力してください。');
+                    return;
+                }
+
+                // 修正依頼プロンプトの生成
+                const prompt = `次の内容で修正を行ってください: ${modificationRequest}`;
+
+                // APIにリクエストを送信
+                const response = await sendRequest(prompt);
+                if (response) {
+                    displayResults(response);
+                } else {
+                    resultDiv.textContent = '申し訳ありませんが、何か問題が発生しました。後で再試行してください。';
+                }
+            });
+
+            async function sendRequest(prompt) {
+                try {
+                    const tokenizer = await AutoTokenizer.from_pretrained('Xenova/gpt-4o');
+                    const response = await fetch('https://api-inference.huggingface.co/models/Xenova/gpt-4o', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer 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' // Hugging Face APIキーを設定
+                        },
+                        body: JSON.stringify({ inputs: prompt })
+                    });
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('ネットワーク応答が正常ではありません:', response.status, errorText);
+                        return null;
+                    }
+
+                    const data = await response.json();
+                    return data[0].generated_text; // モデルの応答を適切に取得
+                } catch (error) {
+                    console.error('フェッチエラー:', error);
+                    return null;
+                }
+            }
+
+            function displayResults(resultText) {
+                resultDiv.innerHTML = ''; // 既存の結果をクリア
+                const resultItems = resultText.split('\n').map(item => item.trim()).filter(item => item);
+                resultItems.forEach((item, index) => {
+                    const resultItemDiv = document.createElement('div');
+                    resultItemDiv.classList.add('result-item');
+                    resultItemDiv.textContent = `結果${index + 1}: ${item}`;
+                    resultDiv.appendChild(resultItemDiv);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
