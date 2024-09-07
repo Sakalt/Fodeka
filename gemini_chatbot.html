@@ -97,15 +97,14 @@
 
     <script>
         let currentRoom = 'default';
-        let chatRooms = { 'default': [] };
-        let apiKey = '';
-        let endpoint = '';
+        let chatRooms = JSON.parse(localStorage.getItem('chatRooms')) || { 'default': [] };
 
         // チャットルーム追加機能
         function addRoom() {
             const roomName = prompt('新しいルーム名を入力してください:');
             if (roomName && !chatRooms[roomName]) {
                 chatRooms[roomName] = [];
+                saveChatRooms();
                 updateRooms();
             }
         }
@@ -144,6 +143,8 @@
             displayMessage(message);
             userInput.value = '';
 
+            saveChatRooms();
+
             const apiKey = document.getElementById('api-key').value;
             const endpoint = document.getElementById('endpoint').value;
             if (!apiKey || !endpoint) {
@@ -168,6 +169,7 @@
                 const botMessage = { sender: 'bot', text: data.reply || 'No response' };
                 chatRooms[currentRoom].push(botMessage);
                 displayMessage(botMessage);
+                saveChatRooms();
             })
             .catch(error => {
                 console.error('Error fetching response:', error);
@@ -188,8 +190,14 @@
             }
         });
 
+        // ローカルストレージにチャットルームのデータを保存
+        function saveChatRooms() {
+            localStorage.setItem('chatRooms', JSON.stringify(chatRooms));
+        }
+
         // 初期化
         updateRooms();
+        changeRoom(currentRoom);
     </script>
 </body>
 </html>
