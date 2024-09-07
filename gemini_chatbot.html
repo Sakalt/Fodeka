@@ -92,6 +92,7 @@
         <div class="controls">
             <input type="text" id="user-input" class="input-area" placeholder="メッセージを入力...">
             <button onclick="sendMessage()">送信</button>
+            <button onclick="resetChat()">リセット</button>
         </div>
     </div>
 
@@ -99,7 +100,6 @@
         let currentRoom = 'default';
         let chatRooms = JSON.parse(localStorage.getItem('chatRooms')) || { 'default': [] };
 
-        // チャットルーム追加機能
         function addRoom() {
             const roomName = prompt('新しいルーム名を入力してください:');
             if (roomName && !chatRooms[roomName]) {
@@ -164,7 +164,12 @@
                 },
                 body: JSON.stringify({ message: message })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTPエラー: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 const botMessage = { sender: 'bot', text: data.reply || 'No response' };
                 chatRooms[currentRoom].push(botMessage);
@@ -173,29 +178,37 @@
             })
             .catch(error => {
                 console.error('Error fetching response:', error);
+                alert('AIの応答を取得できませんでした。エンドポイントやAPIキーを確認してください。');
             });
         }
 
-        // 言語切り替え機能
+        function resetChat() {
+            if (confirm('現在のチャットをリセットしますか？この操作は元に戻せません。')) {
+                chatRooms[currentRoom] = [];
+                document.getElementById('messages').innerHTML = '';
+                saveChatRooms();
+            }
+        }
+
         document.getElementById('language-select').addEventListener('change', (event) => {
             const lang = event.target.value;
             if (lang === 'en') {
                 document.querySelector('h2').textContent = 'Gemini Chatbot';
                 document.getElementById('user-input').placeholder = 'Enter your message...';
                 document.querySelector('button[onclick="sendMessage()"]').textContent = 'Send';
+                document.querySelector('button[onclick="resetChat()"]').textContent = 'Reset';
             } else {
                 document.querySelector('h2').textContent = 'ジェミニチャットボット';
                 document.getElementById('user-input').placeholder = 'メッセージを入力...';
                 document.querySelector('button[onclick="sendMessage()"]').textContent = '送信';
+                document.querySelector('button[onclick="resetChat()"]').textContent = 'リセット';
             }
         });
 
-        // ローカルストレージにチャットルームのデータを保存
         function saveChatRooms() {
             localStorage.setItem('chatRooms', JSON.stringify(chatRooms));
         }
 
-        // 初期化
         updateRooms();
         changeRoom(currentRoom);
     </script>
