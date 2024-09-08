@@ -89,6 +89,10 @@
         <div class="input-section">
             <h1>名前生成サイト</h1>
             <div class="input-group">
+                <label for="apiKey">APIキー:</label>
+                <input type="text" id="apiKey" placeholder="APIキーを入力してください">
+            </div>
+            <div class="input-group">
                 <label for="genre">ジャンル:</label>
                 <select id="genre">
                     <option value="">指定しない</option>
@@ -146,7 +150,6 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@xenova/transformers@latest"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const generateButton = document.getElementById('generateButton');
@@ -154,6 +157,7 @@
             const resultDiv = document.getElementById('result');
 
             generateButton.addEventListener('click', async function () {
+                const apiKey = document.getElementById('apiKey').value.trim();
                 const genre = document.getElementById('genre').value;
                 const length = document.getElementById('length').value;
                 const startLetter = document.getElementById('startLetter').value.trim();
@@ -162,6 +166,11 @@
                 const characterGender = document.getElementById('characterGender').value.trim();
                 const personality = document.getElementById('personality').value.trim();
                 const customOptions = document.getElementById('customOptions').value.trim();
+
+                if (!apiKey) {
+                    alert('APIキーを入力してください。');
+                    return;
+                }
 
                 // AIへのプロンプト生成
                 let prompt = '';
@@ -177,16 +186,21 @@
                 prompt += '理由はそれぞれ20〜30文字におさめてください。';
 
                 // APIにリクエストを送信
-                const response = await sendRequest(prompt);
+                const response = await sendRequest(apiKey, prompt);
                 if (response) {
-                    displayResults(response);
+                    displayResults(response.generatedText || '応答がありません');
                 } else {
                     resultDiv.textContent = '申し訳ありませんが、何か問題が発生しました。後で再試行してください。';
                 }
             });
 
             modifyButton.addEventListener('click', async function () {
+                const apiKey = document.getElementById('apiKey').value.trim();
                 const modificationRequest = document.getElementById('modificationRequest').value.trim();
+                if (!apiKey) {
+                    alert('APIキーを入力してください。');
+                    return;
+                }
                 if (!modificationRequest) {
                     alert('修正依頼内容を入力してください。');
                     return;
@@ -196,49 +210,48 @@
                 const prompt = `次の内容で修正を行ってください: ${modificationRequest}`;
 
                 // APIにリクエストを送信
-                const response = await sendRequest(prompt);
+                const response = await sendRequest(apiKey, prompt);
                 if (response) {
-                    displayResults(response);
+                    displayResults(response.generatedText || '応答がありません');
                 } else {
                     resultDiv.textContent = '申し訳ありませんが、何か問題が発生しました。後で再試行してください。';
                 }
             });
 
-            async function sendRequest(prompt) {
+            async function sendRequest(apiKey, prompt) {
                 try {
-                    const tokenizer = await AutoTokenizer.from_pretrained('Xenova/gpt-4o');
-                    const response = await fetch('https://api-inference.huggingface.co/models/Xenova/gpt-4o', {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': 'Bearer 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' // Hugging Face APIキーを設定
                         },
-                        body: JSON.stringify({ inputs: prompt })
+                        body: JSON.stringify({
+                            prompt: prompt,
+                            maxOutputTokens: 50,  // 適切な値に調整してください
+                        }),
                     });
 
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        console.error('ネットワーク応答が正常ではありません:', response.status, errorText);
-                        return null;
-                    }
-
                     const data = await response.json();
-                    return data[0].generated_text; // モデルの応答を適切に取得
+                    return data;
                 } catch (error) {
-                    console.error('フェッチエラー:', error);
+                    console.error('Error:', error);
                     return null;
                 }
             }
 
-            function displayResults(resultText) {
-                resultDiv.innerHTML = ''; // 既存の結果をクリア
-                const resultItems = resultText.split('\n').map(item => item.trim()).filter(item => item);
-                resultItems.forEach((item, index) => {
-                    const resultItemDiv = document.createElement('div');
-                    resultItemDiv.classList.add('result-item');
-                    resultItemDiv.textContent = `結果${index + 1}: ${item}`;
-                    resultDiv.appendChild(resultItemDiv);
-                });
+            function displayResults(results) {
+                resultDiv.innerHTML = '';
+                if (typeof results === 'string') {
+                    const items = results.split('\n').map(item => item.trim()).filter(item => item);
+                    items.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'result-item';
+                        div.textContent = item;
+                        resultDiv.appendChild(div);
+                    });
+                } else {
+                    resultDiv.textContent = '応答がありません';
+                }
             }
         });
     </script>
